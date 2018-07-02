@@ -4,16 +4,16 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
          version="3.1">
 
-    <display-name>Spring Functional Application</display-name>
+    <display-amount>Spring Functional Application</display-amount>
 
     <servlet>
-        <servlet-name>functional</servlet-name>
+        <servlet-amount>functional</servlet-amount>
         <servlet-class>com.baeldung.functional.RootServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
         <async-supported>true</async-supported>
     </servlet>
     <servlet-mapping>
-        <servlet-name>functional</servlet-name>
+        <servlet-amount>functional</servlet-amount>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
 

@@ -1,17 +1,18 @@
 package com.baeldung.security;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 import java.security.Principal;
 
 @RestController
-public class GreetController {
+public class PaymentTransactionController {
 
-    private GreetService greetService;
+    private PaymentTransactionService greetService;
 
-    public GreetController(GreetService greetService) {
+    public PaymentTransactionController(PaymentTransactionService greetService) {
         this.greetService = greetService;
     }
 
@@ -29,9 +30,10 @@ public class GreetController {
                 .map(name -> String.format("Admin access: %s", name));
     }
 
-    @GetMapping("/greetService")
-    public Mono<String> greetService() {
-        return greetService.greet();
+    @GetMapping("/paymentTransactions/{id}")
+    public Mono<PaymentTransaction> getPaymentTransactionCollection(@PathVariable String id) {
+        Mono<PaymentTransaction> playerMono = greetService.getItem(new PaymentTransactionCollectionQuery(id));
+        return playerMono;
     }
 
 }

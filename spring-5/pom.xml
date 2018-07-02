@@ -7,7 +7,7 @@
     <artifactId>spring-5</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>spring-5</name>
+    <amount>spring-5</amount>
     <description>spring 5 sample project about new features</description>
 
     <parent>

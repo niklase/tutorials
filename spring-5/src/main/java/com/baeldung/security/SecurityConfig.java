@@ -1,42 +1,75 @@
 package com.baeldung.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
-import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.server.SecurityWebFilterChain;
 
+import java.util.ArrayList;
+import java.util.List;
+
+@Configuration
 @EnableWebFluxSecurity
-@EnableReactiveMethodSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    @Bean
-    public SecurityWebFilterChain securitygWebFilterChain(ServerHttpSecurity http) {
-        return http.authorizeExchange()
-                .pathMatchers("/admin").hasAuthority("ROLE_ADMIN")
-                .anyExchange().authenticated()
-                .and().formLogin()
-                .and().build();
+    @Autowired
+    private BasePermissionEvaluator permissionEvaluator;
+
+
+
+    @Autowired
+    public void registerGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        // in reality DB auth is required
+        auth.inMemoryAuthentication().withUser("user").password("user").roles("USER").and().withUser("admin")
+                .password("admin").roles("USER", "ADMIN");
     }
+
+    @Bean
+    public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
+        DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
+        handler.setPermissionEvaluator(permissionEvaluator);
+        return handler;
+    }
+
+
+    @Bean
+    public AuthenticationManager authenticationManager(){
+        return new AuthenticationManager() {
+            @Override
+            public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+                return null;
+            }
+        };
+    }
+
 
     @Bean
     public MapReactiveUserDetailsService userDetailsService() {
-        UserDetails user = User.withDefaultPasswordEncoder()
-                .username("user")
-                .password("password")
-                .roles("USER")
-                .build();
+        User.UserBuilder userBuilder = User.withDefaultPasswordEncoder();
+        UserDetails rob = userBuilder.username("1234567").password("1234567").roles("PLAYER").build();
+        UserDetails admin = userBuilder.username("support").password("support").roles("USER","ADMIN").build();
 
-        UserDetails admin = User.withDefaultPasswordEncoder()
-                .username("admin")
-                .password("password")
-                .roles("ADMIN")
-                .build();
+        UserDetails noone = userBuilder.username("noone").password("noone").roles("NOONE").build();
 
-        return new MapReactiveUserDetailsService(user, admin);
+        return new MapReactiveUserDetailsService(noone);
+
     }
+
+
 
 }
