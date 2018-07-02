@@ -11,22 +11,46 @@ import java.util.List;
 @Service
 public class PaymentTransactionService {
 
-    private List<PerRoleFilter<PaymentTransaction>> filters;
     private ResponseFilter<PaymentTransaction> responseFilter;
+    private ServiceAccessController serviceAccessController;
 
-    public PaymentTransactionService(@Autowired List<PerRoleFilter<PaymentTransaction>> filters) {
-        this.filters = filters;
+
+
+    public PaymentTransactionService(@Autowired List<PerRoleFilter<PaymentTransaction>> filters, @Autowired ServiceAccessController serviceAccessController) {
         responseFilter = new ResponseFilter<>(filters);
+        this.serviceAccessController = serviceAccessController;
     }
 
-    @PreAuthorize("hasPermission(#itemQuery, 'query')")
-    //@PreAuthorize("hasRole('SUPPORT')")
-    public Mono<PaymentTransaction> getItem(PaymentTransactionCollectionQuery itemQuery) {
+    public Mono<Response<PaymentTransaction>> getItem(PaymentTransactionCollectionQuery itemQuery) {
 
-        // Business logic
-        PaymentTransaction player = new PaymentTransaction("1234567", new BigDecimal("10980"), "This transaction looks fishy");
+        Mono<Boolean> hasQueryPermissionMono = serviceAccessController.authorizeQuery(itemQuery);
 
-        return responseFilter.filterByAuthorization(player);
+        return hasQueryPermissionMono.flatMap(hasQueryPermission ->
+                !hasQueryPermission ?
+                        createErrorResponse():
+                        filterResponse(performGetItemBusinessLogic(itemQuery)));
+
+
     }
+
+    private Mono<Response<PaymentTransaction>> createErrorResponse(){
+        return Mono.just(new Response(PaymentTransaction.class, "Query permission error...", 403));
+    }
+
+    private Mono<Response<PaymentTransaction>> filterResponse(Mono<Response<PaymentTransaction>> businessResponse ) {
+
+        Mono<PaymentTransaction> filteredBodyMono = businessResponse.flatMap(response -> responseFilter.filterByAuthorization(response.getBody()));
+
+        Mono<Response<PaymentTransaction>> result =  filteredBodyMono.map(r -> new Response(r, 200));
+
+        return result;
+    }
+
+
+    private Mono<Response<PaymentTransaction>> performGetItemBusinessLogic(PaymentTransactionCollectionQuery itemQuery) {
+        return Mono.just(new Response(new PaymentTransaction("1234567", new BigDecimal("10980"), "This transaction looks fishy"), 200));
+    }
+
+
 
 }
