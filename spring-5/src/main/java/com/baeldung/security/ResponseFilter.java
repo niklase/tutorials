@@ -20,13 +20,18 @@ public class ResponseFilter<T extends MergeableModel> {
 
 
     public Mono<T> filterByAuthorization(T mergeable){
-        return Mono.just(mergeable)
-                .flatMap(p -> ReactiveSecurityContextHolder
-                        .getContext()
-                        .map(context ->
-                                filterByAuthorization(mergeable, context)
-                        ));
-
+        Mono<T> result = null;
+        if (mergeable == null) {
+            result = Mono.empty();
+        } else {
+            result = Mono.just(mergeable)
+                    .flatMap(p -> ReactiveSecurityContextHolder
+                            .getContext()
+                            .map(context ->
+                                    filterByAuthorization(mergeable, context)
+                            ));
+        }
+        return result;
     }
 
     public T filterByAuthorization(T mergeable, SecurityContext securityContext) {

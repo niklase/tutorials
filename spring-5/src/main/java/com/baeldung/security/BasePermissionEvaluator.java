@@ -8,18 +8,29 @@ import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 
-@Component
+//@Component
 public class BasePermissionEvaluator implements PermissionEvaluator {
+    @Override
+    public boolean hasPermission(Authentication authentication, Object targetDomainObject, Object permission) {
+        return false;
+    }
 
+    @Override
+    public boolean hasPermission(Authentication authentication, Serializable targetId, String targetType, Object permission) {
+        return false;
+    }
+
+
+    /*
     @Override
     public boolean hasPermission(Authentication authentication, Object model, Object action) {
         boolean hasPermission = false;
-        if (model.getClass() == PaymentTransactionCollectionQuery.class && "query".equals(action)) {
+        if (model.getClass() == PaymentTransactionItemQuery.class && "query".equals(action)) {
             for (GrantedAuthority grantedAuthority : authentication.getAuthorities()) {
 
 
                 if (grantedAuthority.getAuthority().equals("ROLE_PLAYER") &&
-                        ((User) authentication.getPrincipal()).getUsername().equals(((PaymentTransactionCollectionQuery) model).getId())) {
+                        ((User) authentication.getPrincipal()).getUsername().equals(((PaymentTransactionItemQuery) model).getId())) {
                     hasPermission = true;
                 } else if (grantedAuthority.getAuthority().equals("ROLE_SUPPORT")){
                     hasPermission = true;
@@ -32,5 +43,5 @@ public class BasePermissionEvaluator implements PermissionEvaluator {
     @Override
     public boolean hasPermission(Authentication authentication, Serializable serializable, String s, Object o) {
         return true;
-    }
+    }*/
 }

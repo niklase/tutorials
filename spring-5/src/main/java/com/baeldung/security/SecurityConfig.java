@@ -20,7 +20,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    @Autowired
+    //@Autowired
     private BasePermissionEvaluator permissionEvaluator;
 
 
@@ -54,18 +54,22 @@ public class SecurityConfig {
     @Bean
     public MapReactiveUserDetailsService userDetailsService() {
         User.UserBuilder userBuilder = User.withDefaultPasswordEncoder();
-        UserDetails rob = userBuilder.username("1234567").password("1234567").roles("PLAYER").build();
-        UserDetails admin = userBuilder.username("support").password("support").roles("USER","ADMIN").build();
-
         UserDetails noone = userBuilder.username("noone").password("noone").roles("NOONE").build();
-
         return new MapReactiveUserDetailsService(noone);
 
     }
 
     @Bean
-    public ReactivePermissionEvaluator<PaymentTransactionCollectionQuery> reactivePermssionEvaluator(){
-        return new ReactivePermissionEvaluator(PaymentTransactionCollectionQuery.class);
+    public ReactivePermissionEvaluator<PaymentTransactionItemQuery> reactiveItemQueryPermissionEvaluator(@Autowired TestRepository repository){
+
+        return new PaymentTransactionItemQueryPermissionEvaluator(repository);
+    }
+
+
+    @Bean
+    public ReactivePermissionEvaluator<PaymentTransactionCollectionQuery> reactiveCollectionQueryPermissionEvaluator(){
+
+        return new PaymentTransactionCollectionQueryPermissionEvaluator();
     }
 
 

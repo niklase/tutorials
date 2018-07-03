@@ -18,6 +18,12 @@ public class Response<T> {
         this.statusCode = statusCode;
     }
 
+    public Response(T body, Object errorBody, int statusCode) {
+
+        this.body = null;
+        this.errorBody = errorBody;
+        this.statusCode = statusCode;
+    }
 
 
     public T getBody() {

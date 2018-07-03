@@ -1,13 +1,22 @@
 package com.baeldung.security;
 
 public class PaymentTransactionCollectionQuery {
-    private String id;
+    private String playerId;
+    private String operatorId;
 
-    public PaymentTransactionCollectionQuery(String id) {
-        this.id = id;
+    private PaymentTransactionCollectionQuery() {
     }
 
-    public String getId() {
-        return id;
+    public PaymentTransactionCollectionQuery(String playerId, String operatorId) {
+        this.playerId = playerId;
+        this.operatorId = operatorId;
+    }
+
+    public String getPlayerId() {
+        return playerId;
+    }
+
+    public String getOperatorId() {
+        return operatorId;
     }
 }

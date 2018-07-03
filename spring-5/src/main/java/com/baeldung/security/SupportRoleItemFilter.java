@@ -3,7 +3,7 @@ package com.baeldung.security;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SupportRoleFilter implements PerRoleFilter<PaymentTransaction> {
+public class SupportRoleItemFilter implements PerRoleFilter<PaymentTransaction> {
 
     @Override
     public String role() {

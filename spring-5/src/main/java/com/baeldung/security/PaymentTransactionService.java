@@ -1,56 +1,45 @@
 package com.baeldung.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class PaymentTransactionService {
-
-    private ResponseFilter<PaymentTransaction> responseFilter;
-    private ServiceAccessController serviceAccessController;
+public class PaymentTransactionService extends BaseService<PaymentTransaction, PaymentTransactionItemQuery, PaymentTransactionCollection, PaymentTransactionCollectionQuery> {
 
 
-
-    public PaymentTransactionService(@Autowired List<PerRoleFilter<PaymentTransaction>> filters, @Autowired ServiceAccessController serviceAccessController) {
-        responseFilter = new ResponseFilter<>(filters);
-        this.serviceAccessController = serviceAccessController;
+    public PaymentTransactionService(@Autowired List<PerRoleFilter<PaymentTransaction>> itemFilters,
+                                     @Autowired List<PerRoleFilter<PaymentTransactionCollection>> collectionFilters,
+                                     @Autowired ServiceAccessController serviceAccessController,
+                                     @Autowired TestRepository repository) {
+        super(itemFilters, collectionFilters, serviceAccessController, repository);
     }
 
-    public Mono<Response<PaymentTransaction>> getItem(PaymentTransactionCollectionQuery itemQuery) {
+    protected Mono<Response<PaymentTransaction>> readItemUnprotected(PaymentTransactionItemQuery itemQuery) {
 
-        Mono<Boolean> hasQueryPermissionMono = serviceAccessController.authorizeQuery(itemQuery);
-
-        return hasQueryPermissionMono.flatMap(hasQueryPermission ->
-                !hasQueryPermission ?
-                        createErrorResponse():
-                        filterResponse(performGetItemBusinessLogic(itemQuery)));
-
-
+        PaymentTransaction paymentTransaction = getRepository().get(itemQuery.getId());
+        return Mono.just(new Response(paymentTransaction, 200));
     }
 
-    private Mono<Response<PaymentTransaction>> createErrorResponse(){
-        return Mono.just(new Response(PaymentTransaction.class, "Query permission error...", 403));
+    protected Mono<Response<PaymentTransactionCollection>> readCollectionUnprotected(PaymentTransactionItemQuery itemQuery) {
+
+        PaymentTransaction paymentTransaction = getRepository().get(itemQuery.getId());
+        return Mono.just(new Response(paymentTransaction, 200));
     }
 
-    private Mono<Response<PaymentTransaction>> filterResponse(Mono<Response<PaymentTransaction>> businessResponse ) {
+    @Override
+    protected Mono<Response<PaymentTransactionCollection>> readCollectionUnprotected(PaymentTransactionCollectionQuery paymentTransactionCollectionQuery) {
 
-        Mono<PaymentTransaction> filteredBodyMono = businessResponse.flatMap(response -> responseFilter.filterByAuthorization(response.getBody()));
 
-        Mono<Response<PaymentTransaction>> result =  filteredBodyMono.map(r -> new Response(r, 200));
+        List<PaymentTransaction> paymentTransactionList = getRepository().getPaymentTransactions();
 
-        return result;
+        PaymentTransactionCollection paymentTransactionCollection = new PaymentTransactionCollection(paymentTransactionList);
+
+        return Mono.just(new Response(paymentTransactionCollection, 200));
+
     }
-
-
-    private Mono<Response<PaymentTransaction>> performGetItemBusinessLogic(PaymentTransactionCollectionQuery itemQuery) {
-        return Mono.just(new Response(new PaymentTransaction("1234567", new BigDecimal("10980"), "This transaction looks fishy"), 200));
-    }
-
-
-
 }
